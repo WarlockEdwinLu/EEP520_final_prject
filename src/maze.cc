@@ -103,7 +103,7 @@ void saveMazeToJson(const std::string& filename) {
     }
 
     file << "{\n";
-    file << "  \"name\": \"Robot World\",\n";
+    file << "  \"name\": \"Maze\",\n";
     file << "  \"ip\": \"0.0.0.0\",\n";
     file << "  \"port\": 8765,\n";
     file << "  \"agents\": [\n";

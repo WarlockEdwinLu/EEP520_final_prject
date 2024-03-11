@@ -131,7 +131,7 @@ void save_coord_path() {
     std::ofstream file("path_coordinates.txt");
     if (file.is_open()) {
         for (const auto& point : coordinates) {
-            file << point.first << "," << point.second << std::endl;
+            file << point.first << " " << point.second << std::endl;
         }
         file.close();
     } else {
