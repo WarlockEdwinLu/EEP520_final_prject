@@ -7,8 +7,12 @@ This project introduces an autonomous maze-solving robot simulation built on the
 # Key Challenges and Solutions
 
 - **Maze Generation**: The `maze.cc` file implements a random perfect maze generator with randomized start and goal positions.
+
 - **Pathfinding**: The `path.cc` file is responsible for computing the shortest path through the maze using an efficient pathfinding algorithm.
-- **Simulation Management**: The `main.cc` file facilitates the simulation setup, ensuring all components interact seamlessly to create a fully autonomous robot within the maze.
+
+- **State Management for Autonomous Behavior**: Ensuring the robot could make intelligent decisions at intersections and dead-ends required robust state management. The `wanderer.h` file includes the definition of different states for movement, such as moving forward, rotating, and wall-following, and handles transitions between these states smoothly.
+
+- **Memory and Path Optimization**: The robot needed a system to remember where it had been to avoid revisiting the same locations and efficiently find the exit. `wanderer.h` facilitates this by managing a list of coordinates that represent the path the robot has taken, ensuring it does not backtrack and always progresses towards the goal.
 
 # Installation / Setup Instructions
 
@@ -68,6 +72,9 @@ The robot in the process of solving the maze.
 ![Maze Solved](images/path_to_solved_image.png)
 The robot has reached the goal, successfully solving the maze.
 
+# Contributions and Acknowledgements
+
+This project was developed by Jiajun Lu. It is built upon the ENVIRO from klavins/enviro:v1.6. Referenced from https://github.com/sosper30/eep520-wi24/blob/main/week9/Lecture9-1_README.md 
 # License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
