@@ -1,95 +1,76 @@
 #ifndef __WANDERER_AGENT__H
 #define __WANDERER_AGENT__H
 
-#include <string>
-#include <math.h>
 #include "enviro.h"
+#include <fstream>
+#include <sstream>
+#include <deque>
 
-namespace
-{
+using namespace enviro;
 
-    using namespace enviro;
+class FollowPath : public State, public AgentInterface {
+public:
+    void entry(const Event& e) override {
+        path.clear();
+        load_path("path_coordinates.txt");
+        if (!path.empty()) {
+            move_to_next();
+        }
+    }
 
-    class MovingForward : public State, public AgentInterface
-    {
-    public:
-        void entry(const Event &e) {}
-        void during()
-        {
-            track_velocity(4, 0);
-            if (sensor_value(0) < 40)
-            {
-                emit(Event(tick_name));
+    void during() override {
+        if (!path.empty() && close_to(path.front().first, path.front().second, 5)) {
+            path.pop_front();
+            move_to_next();
+        }
+    }
+
+    void exit(const Event& e) override {}
+
+private:
+    std::deque<std::pair<double, double>> path;
+
+    void load_path(const std::string& filename) {
+        std::ifstream file(filename);
+        std::string line;
+        while (std::getline(file, line)) {
+            std::istringstream iss(line);
+            double x, y;
+            if (iss >> x >> y) {
+                path.emplace_back(x, y);
             }
         }
-        void exit(const Event &e) {}
-        void set_tick_name(std::string s) { tick_name = s; }
-        std::string tick_name;
-    };
+    }
 
-    class Rotating : public State, public AgentInterface
-    {
-    public:
-        void entry(const Event &e) { rate = rand() % 2 == 0 ? 2 : -2; }
-        void during()
-        {
-            track_velocity(0, rate);
-            if (sensor_value(0) > 140)
-            {
-                emit(Event(tick_name));
-            }
+    void move_to_next() {
+        if (!path.empty()) {
+            move_toward(path.front().first, path.front().second, 10, 200);
         }
-        void exit(const Event &e) {}
-        double rate;
-        void set_tick_name(std::string s) { tick_name = s; }
-        std::string tick_name;
-    };
+    }
 
-    class WandererController : public StateMachine, public AgentInterface
-    {
+    bool close_to(double x, double y, double tolerance) {
+        auto [px, py] = position();
+        return (std::hypot(px - x, py - y) < tolerance);
+    }
+};
 
-    public:
-        WandererController() : StateMachine()
-        {
+class WandererController : public StateMachine, public AgentInterface {
+public:
+    WandererController() : StateMachine() {
+        set_initial(follow_path);
+    }
+    FollowPath follow_path;
+};
 
-            set_initial(moving_forward);
-            tick_name = "tick_" + std::to_string(rand() % 1000); // use an agent specific generated
-                                                                 // event name in case there are
-                                                                 // multiple instances of this class
-            add_transition(tick_name, moving_forward, rotating);
-            add_transition(tick_name, rotating, moving_forward);
-            moving_forward.set_tick_name(tick_name);
-            rotating.set_tick_name(tick_name);
-        }
+class Wanderer : public Agent {
+public:
+    Wanderer(json spec, World& world) : Agent(spec, world) {
+        add_process(controller);
+    }
+private:
+    WandererController controller;
+};
 
-        //void update()
-        //{
-        //    if (rand() % 100 <= 5)
-         //   {
-         //       emit(Event("tick"));
-         //   }
-         //   StateMachine::update();
-        //}
+DECLARE_INTERFACE(Wanderer)
 
-        MovingForward moving_forward;
-        Rotating rotating;
-        std::string tick_name;
-    };
-
-    class Wanderer : public Agent
-    {
-
-    public:
-        Wanderer(json spec, World &world) : Agent(spec, world)
-        {
-            add_process(wc);
-        }
-
-        WandererController wc;
-    };
-
-    DECLARE_INTERFACE(Wanderer);
-
-}
-
-#endif
+#endif /* __WANDERER_AGENT__H */

@@ -20,9 +20,10 @@ INCLUDE		:= -I $(ENVIRODIR) -I $(CHIPDIR)/include/chipmunk
 #Files
 
 TARGETDIR	 := ../lib
-SOURCES      := $(wildcard *.cc)
+EXCLUDES    := main.cc maze.cc path.cc
+SOURCES      := $(filter-out $(EXCLUDES), $(wildcard *.cc))
 HEADERS      := $(wildcard *.h)
-TARGETS		 := $(patsubst %.cc,%.so,$(wildcard *.cc))
+TARGETS		 := $(patsubst %.cc,%.so,$(SOURCES))
 FULL_TARGETS := $(addprefix $(TARGETDIR)/, $(TARGETS))
 
 #Default Make
